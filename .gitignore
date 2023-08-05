@@ -1,0 +1,14 @@
+# envs
+.env
+.env.development
+.env.staging
+.env.production
+
+# node_modules
+node_modules
+
+# build folder
+dist
+
+# examples node_modules folders
+examples/basic_example/node_modules
