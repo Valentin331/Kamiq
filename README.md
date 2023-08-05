@@ -46,10 +46,8 @@ import { BaseController, Get } from "kamiq"; // Import the BaseController and th
 export class SampleController extends BaseController {
     path = '/ping' // Base path for the following routes.
 
-    // @ts-ignore
     @Get('/test') // Get controller registeres the route with a GET method and handles errors
     ping() {
-        // @ts-ignore
         this.ok('pong') // Usage of helper functions for returning JSON data
     } 
 }
@@ -162,10 +160,8 @@ import { BaseController, Get } from "kamiq";
 export class SampleController extends BaseController {
     path = '/ping'
 
-    // @ts-ignore
     @Get('/test')
     ping() {
-        // @ts-ignore
         this.ok('pong')
     } 
 }
@@ -205,7 +201,6 @@ A `BaseError` class extends the `NodeError`, making it trivial to write your own
         
         throw new CustomError("my error message!")
 
-        // @ts-ignore
         this.ok('res')
     } 
 ```
@@ -337,6 +332,7 @@ I have just began working on this project, so here are some short rough todos I 
 5. All support for providing custom error and error logger middlewares
 6. All file upload and processing support
 7. Add support for server-wide loggers
+8. Add custom errors and handle more errors
 
 ### 4.2. Low priority
 1. Add support for registering vanilla express routes
