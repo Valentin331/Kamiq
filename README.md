@@ -11,8 +11,8 @@ Kamiq is built on top of [Express.js](https://expressjs.com/) and by design offe
 This project is a personal learning experiment and is not meant to be used for any production or production-like environment. It contains underdeveloped code and is missing a lot of features for it to be suitable for any real-world use. Further development will show where I want to take this project. Currently feel free to use, explore, and offer modifications to the codebase.
 
 ## Table of Contents
-- [1. Installation](#installation)
-- [2. Example of usage](#example-of-usage)
+- [1. Installation](#1-installation)
+- [2. Example of usage](#2-example-of-usage)
 
 ## 1. Example of usage
 
