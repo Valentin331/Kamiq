@@ -22,7 +22,7 @@ export function Guard(guardMiddleware: GuardFunction, options?: GuardOptions) {
       const metadataService = getService<IMetadataService>('MetadataService')
 
       const existingGuardMiddlewares: Array<any> = metadataService.get(Metadata.GUARDS, target.constructor.uuid) ?? []
-      existingGuardMiddlewares.push({
+      existingGuardMiddlewares.unshift({
         handler: target[propertyKey],
         guardMiddleware: async (req: Request, res: Response, next: NextFunction) => {
           let allowed: boolean

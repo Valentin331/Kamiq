@@ -26,9 +26,11 @@ This project is a personal learning experiment and is not meant to be used for a
       - [3.1.1. Server class](#311-server-class)
       - [3.1.2. Controllers](#312-controllers)
     - [3.2. Parameters](#32-parameters)
-      - [3.2.1. Param](#321-param)
-      - [3.2.1. Query](#321-query)
-      - [3.2.1. Body](#321-body)
+      - [3.2.1. Req (request lifecycle object)](#321-req-request-lifecycle-object)
+      - [3.2.2. Res (request lifecycle object)](#322-res-request-lifecycle-object)
+      - [3.2.3. Param](#323-param)
+      - [3.2.4. Query](#324-query)
+      - [3.2.5. Body](#325-body)
     - [3.3. Error handling](#33-error-handling)
     - [3.4. Middlewares](#34-middlewares)
     - [3.5. Guards](#35-guards)
@@ -53,7 +55,7 @@ import * as kamiq from 'kamiq' // Import the framework
 // Import a sample controller:
 import { SampleController } from './controllers/sampleController'
 
-// Initialize the server and provide basic configuration:
+// Initialize the server and provide basic configuration (most basic way shown):
 const server = new kamiq.Server({
     port: 3002,
     controllers: [SampleController],
@@ -72,9 +74,18 @@ import { BaseController, Get } from "kamiq"; // Import the BaseController and th
 export class SampleController extends BaseController {
     path = '/ping' // Base path for the following routes.
 
+    @Guard(new AgencyAuthorizer()) // Guards
+    @Middleware(new LogSignInEvent('user')) // Middlewares   
     @Get('/test') // Get controller registeres the route with a GET method and handles errors
-    ping() {
-        this.ok('pong') // Usage of helper functions for returning JSON data
+    ping(@Req() req: Request, @Res() res: Response @Body() body: IUserSignIn @Param('userId') userId: string) {
+
+        const { password } = body
+
+        const signIn = AuthService.signin(userId, password) // Kamiq operation
+
+        if (signIn.error) throw new AuthorizationError(signIn.error) // Picked up by global err handling middleware 
+
+        res.json({ msg: 'success' })
     } 
 }
 ```
@@ -97,7 +108,7 @@ npm install kamiq
 
 ### 2.2. Configuring your project
 
-Make sure you have he following settings in your `tsconfig.ts`:
+Make sure you have the following settings in your `tsconfig.json`:
 
 ```json
 {
@@ -203,7 +214,30 @@ The `Get('/test')` decorator registeres the route with the `GET` method. It take
 
 To get access to the request data, Kamiq provides you with a few decorators:
 
-#### 3.2.1. Param
+#### 3.2.1. Req (request lifecycle object)
+
+Use the `@Req` decorator to inject the express lifecycle `Request` object into your controller handler:
+
+```typescript
+@Get('/test')
+    ping(@Req() req: Request) {
+        log(req.body)
+        this.ok('success')
+    } 
+```
+
+#### 3.2.2. Res (request lifecycle object)
+
+Use the `@Res` decorator to inject the express lifecycle `Response` object into your controller handler:
+
+```typescript
+@Get('/test')
+    ping(@Res() res: Response) {
+        res.send('success')
+    } 
+```
+
+#### 3.2.3. Param
 
 Use the `@Param` decorator to inject parameters in your controller handler:
 
@@ -214,7 +248,7 @@ Use the `@Param` decorator to inject parameters in your controller handler:
     } 
 ```
 
-#### 3.2.1. Query
+#### 3.2.4. Query
 
 Use the `@Query` decorator to inject query paramteres in your controller handler:
 
@@ -225,7 +259,7 @@ Use the `@Query` decorator to inject query paramteres in your controller handler
     } 
 ```
 
-#### 3.2.1. Body
+#### 3.2.5. Body
 
 Use the `@Body` decorator to inject body object in your controller handler:
 
@@ -282,28 +316,70 @@ and Kamiq will handle everything for you.
 Custom middlewares can be run by simply using the `Middleware()` decorator on a route:
 
 ```typescript
-@Middleware(myCustomMiddleware)
+@Middleware(new myCustomMiddleware())
 @Get('/test')
     ping() {
         // ...
     } 
 ```
 
-where `myCustomMiddleware` is an Express middleware function. Accepted middleware functions are of the following type:
+where `myCustomMiddleware` is a class that implements the `KamiqMiddleware` interface, which wraps the express middleware function in a `use()` function. The said `myCustomMiddleware` might look like this:
 
 ```typescript
-interface MiddlewareFunction {
-  (req: Request, res: Response, next: Next): void
+export class MySampleMiddleware implements KamiqMiddleware {
+    async use(req: Request, res: Response, next: NextFunction): Promise<void> {
+        // middleware code...
+        next()
+    }
 }
 ```
 
 allowing you to directly port your old Express code to Kamiq.
 
+Middlewares can also accept parameters that you can use in your `use()` function, and even modify the `request` object like so:
+
+```typescript
+// Middleware
+export class MySampleMiddleware implements KamiqMiddleware {
+    private readonly ignore: boolean;
+
+    constructor(ignore: boolean) {
+        this.ignore = ignore;
+      }
+
+    async use(req: Request, res: Response, next: NextFunction): Promise<void> {
+        
+        if (this.ignore) next() 
+
+        log('sample middleware hit!')
+        // Modifying the request object:
+        // @ts-ignore
+        req.something = 'this is nice'
+        next()
+    }
+
+}
+
+// Route
+@Middleware(new MySampleMiddleware(false))
+    @Middleware(new MySampleMiddleware2(false))
+    @Post('/test')
+    ping(@Req() req: Request, @Res() res: Response) {
+
+        // @ts-ignore 
+        console.log('the req.something:', req.something)
+
+        console.log('request object:', req.body)
+
+        res.send('hello, client!')
+    } 
+```
+
 Middlewares can be also chained, where the order of operations are respected:
 
 ```typescript
-@Middleware(myCustomMiddleware)
-@Middleware(myCustomMiddleware2)
+@Middleware(new myCustomMiddleware())
+@Middleware(new myCustomMiddleware2())
 @Get('/test')
     ping() {
         // ...

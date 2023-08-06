@@ -166,9 +166,7 @@ export class Server {
       titleAlignment: 'left',
     }
 
-    const message = 
-      '\n'
-      + `Server is listening on  http://localhost:${this.config.port}` 
+    const message = `Server is listening on  http://localhost:${this.config.port}` 
 
       // @ts-ignore
     return boxen(message, boxenOptions)

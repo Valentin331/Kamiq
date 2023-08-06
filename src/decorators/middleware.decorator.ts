@@ -2,6 +2,8 @@ import { Metadata } from '../enums'
 import { IMetadataService } from '../interfaces'
 import { container } from 'tsyringe'
 import { getService } from '../utils/getService.function'
+import { KamiqMiddleware } from '../interfaces/kamiqInterface.interface'
+import { NextFunction, Request, Response } from 'express'
 
 /**
  * Middleware decorator factory. This decorator adds the provided middleware
@@ -24,14 +26,14 @@ import { getService } from '../utils/getService.function'
  * }
  * ```
  */
-export function Middleware(middleware: any) {
+export function Middleware(middleware: KamiqMiddleware) {
   return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
     const metadataService = getService<IMetadataService>('MetadataService')
 
     const exisitngMiddlewares: Array<any> = metadataService.get(Metadata.MIDDLEWARES, target.constructor.uuid) ?? [] // TODO: Do i need this empty array here as a backup?
-    exisitngMiddlewares.push({
+    exisitngMiddlewares.unshift({
       handler: target[propertyKey],
-      middleware,
+      middleware: (req: Request, res: Response, next: NextFunction) => middleware.use(req, res, next),
     })
     metadataService.set(Metadata.MIDDLEWARES, target.constructor.uuid, exisitngMiddlewares)
   }

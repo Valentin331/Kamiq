@@ -21,7 +21,6 @@ const services: { [key: string]: any } = {};
  */
 export function getService<T>(serviceName: string): T {
   if (!services[serviceName]) {
-    console.log('hit!')
     services[serviceName] = container.resolve<T>(serviceName);
   }
   return services[serviceName];
