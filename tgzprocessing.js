@@ -48,6 +48,8 @@ const repack = async () => {
     file: filename,
     cwd: './',
   }, ['package']);
+
+  await fs.promises.rmdir('package', { recursive: true })
 };
 
 repack().catch(console.error);
