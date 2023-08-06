@@ -11,8 +11,30 @@ Kamiq is built on top of [Express.js](https://expressjs.com/) and by design offe
 This project is a personal learning experiment and is not meant to be used for any production or production-like environment. It contains underdeveloped code and is missing a lot of features for it to be suitable for any real-world use. Further development will show where I want to take this project. Currently feel free to use, explore, and offer modifications to the codebase.
 
 ## Table of Contents
-- [1. Example of usage](#1-example-of-usage)
-- [2. Installation](#2-installation)
+- [Kamiq](#kamiq)
+  - [Description](#description)
+  - [Disclaimer!](#disclaimer)
+  - [Table of Contents](#table-of-contents)
+  - [1. Example of usage](#1-example-of-usage)
+    - [1.1. Configuring the server](#11-configuring-the-server)
+    - [1.2. Controller and route example](#12-controller-and-route-example)
+  - [2. Installation](#2-installation)
+    - [2.1. Installing the framework and dependencies](#21-installing-the-framework-and-dependencies)
+    - [2.2. Configuring your project](#22-configuring-your-project)
+  - [3. Introduction](#3-introduction)
+    - [3.1. Getting started](#31-getting-started)
+      - [3.1.1. Server class](#311-server-class)
+      - [3.1.2. Controllers](#312-controllers)
+    - [3.2. Parameters](#32-parameters)
+    - [3.3. Error handling](#33-error-handling)
+    - [3.4. Middlewares](#34-middlewares)
+    - [3.5. Guards](#35-guards)
+    - [3.6. Operations](#36-operations)
+    - [3.6. Kamiq errors](#36-kamiq-errors)
+  - [4. Plans for the future](#4-plans-for-the-future)
+    - [4.1. High priority](#41-high-priority)
+    - [4.2. Low priority](#42-low-priority)
+    - [4.1. Backburner priority](#41-backburner-priority)
 
 
 ## 1. Example of usage
@@ -174,7 +196,7 @@ The `path` property is the controller-level path that all routes in this contoll
 
 The `Get('/test')` decorator registeres the route with the `GET` method. It takes in one string argument which is the route-specific path suffix.
 
-### 3.2. Paramters
+### 3.2. Parameters
 
 ### 3.3. Error handling
 
@@ -323,7 +345,7 @@ Kamiq also handles `unhandledRejection` and `uncaughtException` errors in a simi
 
 ## 4. Plans for the future
 
-I have just began working on this project, so here are some short rough todos I plan to tacle in the future:
+I have just began working on this project, so here are some short rough todos I plan to tackle in the future:
 
 ### 4.1. High priority
 1. Publish to NPM
