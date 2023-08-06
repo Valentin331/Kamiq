@@ -14,7 +14,6 @@ export class KamiqError extends Error {
             padding: 1,
             margin: 1,
             borderColor: 'blue',
-            backgroundColor: 'black',
             title: 'Kamiq encountered an error!',
             titleAlignment: 'left'
         };

@@ -21,7 +21,7 @@ import { BaseError } from "../utils"
  *
  * @returns {void}
  */
-export const errorResponse: ErrorRequestHandler = (error, req, res, next) => {
+export const defaultErrorHandler: ErrorRequestHandler = (error, req, res, next) => {
     // TODO: Make this into a function that can be provided to the server factory.
     let response: ErrorResponse = {
       response: 'error',
