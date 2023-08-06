@@ -8,7 +8,10 @@
 node_modules
 
 # build folder
-dist
+/dist/*
 
 # examples node_modules folders
 examples/basic_example/node_modules
+
+# any .tgz archives
+*.tgz
