@@ -10,3 +10,6 @@ export * from './http/delete.decorator'
 export * from './parameters/body.decorator'
 export * from './parameters/param.decorator'
 export * from './parameters/query.decorator'
+
+export * from './parameters/req.decorator'
+export * from './parameters/res.decorator'

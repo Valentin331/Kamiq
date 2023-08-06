@@ -107,7 +107,7 @@ export abstract class BaseController {
           const internalServerError = this.internalServerError.bind(this, res)
           return Promise.resolve(
             route.handler.apply(
-              { ...this, ok, created, noContent, badRequest, notFound, internalServerError, req, res },
+              { ...this, ok, created, noContent, badRequest, notFound, internalServerError },
               [...args],
             ),
           )

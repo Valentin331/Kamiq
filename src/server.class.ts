@@ -178,8 +178,18 @@ export class Server {
    * Starts the server, making it listen on the configured port.
    */
   public start() {
+    // TODO: Refactor this part into a function.
+    // configure server
+    this.server.set('port', this.config.port)
+    if (this.config.cors) this.server.use(cors())
+    if (this.config.jsonBodyParser) {
+      console.log('calldwad')
+      this.server.use(express.json())
+      this.server.use(express.urlencoded({ extended: true }))
+    }
     this.registerControllers() // Should this be here?
 
+    // start the server
     this.server.listen(this.config.port, () => {
       console.log(this.getServerStartMessage())
     })
