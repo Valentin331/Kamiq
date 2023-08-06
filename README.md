@@ -26,6 +26,9 @@ This project is a personal learning experiment and is not meant to be used for a
       - [3.1.1. Server class](#311-server-class)
       - [3.1.2. Controllers](#312-controllers)
     - [3.2. Parameters](#32-parameters)
+      - [3.2.1. Param](#321-param)
+      - [3.2.1. Query](#321-query)
+      - [3.2.1. Body](#321-body)
     - [3.3. Error handling](#33-error-handling)
     - [3.4. Middlewares](#34-middlewares)
     - [3.5. Guards](#35-guards)
@@ -197,6 +200,50 @@ The `path` property is the controller-level path that all routes in this contoll
 The `Get('/test')` decorator registeres the route with the `GET` method. It takes in one string argument which is the route-specific path suffix.
 
 ### 3.2. Parameters
+
+To get access to the request data, Kamiq provides you with a few decorators:
+
+#### 3.2.1. Param
+
+Use the `@Param` decorator to inject parameters in your controller handler:
+
+```typescript
+@Get('/test')
+    ping(@Param("userId") userId: string) {
+        this.ok(userId)
+    } 
+```
+
+#### 3.2.1. Query
+
+Use the `@Query` decorator to inject query paramteres in your controller handler:
+
+```typescript
+@Get('/test')
+    ping(@Query("modifiedType") modifierType: string) {
+        this.ok(modifierType)
+    } 
+```
+
+#### 3.2.1. Body
+
+Use the `@Body` decorator to inject body object in your controller handler:
+
+```typescript
+@Get('/test')
+    ping(@Body() body: any) {
+        this.ok(body)
+    } 
+```
+
+The `@Body` decorator also takes in a string argument that extracts a specific property from the body object:
+
+```typescript
+@Get('/test')
+    ping(@Body("userObj") user: any) {
+        this.ok(user)
+    } 
+```
 
 ### 3.3. Error handling
 
