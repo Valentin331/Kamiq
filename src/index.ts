@@ -1,23 +1,23 @@
 // Base controller
-export * from "./baseController"
+export { BaseController } from "./baseController";
 
 // Server class
-export * from "./server.class"
+export { Server } from "./server.class";
 
 // Decorators
-export * from './decorators'
+export * as Decorators from './decorators';
 
 // Interfaces
-export * from './interfaces'
+export * as Interfaces from './interfaces';
 
 // Enums
-export * from './enums'
+export * as Enums from './enums';
 
 // Utils
-export * from './utils'
+export * as Utils from './utils';
 
 // Middlewares
-export * from './middlewares'
+export * as Middlewares from './middlewares';
 
 // Types
-export * from './types'
+export * as Types from './types';

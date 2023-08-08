@@ -1,10 +1,11 @@
 import 'reflect-metadata'
-import * as kamiq from 'kamiq'
+import { Server } from 'kamiq'
+import { defaultErrorHandler } from 'kamiq/middlewares'
 
 import { SampleController } from './controllers/sampleController'
 
 // Setting the server with the initial config object
-const serverWithInitalConfig = new kamiq.Server({
+const serverWithInitalConfig = new Server({
     port: 8001,
     controllers: [SampleController],
     cors: true,
@@ -13,13 +14,13 @@ const serverWithInitalConfig = new kamiq.Server({
 
 
 // Setting the server without any config
-const server = new kamiq.Server()
+const server = new Server()
 
 server.setPort(8001)
 server.useJsonBodyParser(true)
 server.useController(SampleController)
 server.useCors(true)
-server.setErrorHandlerMiddleware(kamiq.defaultErrorHandler)
+server.setErrorHandlerMiddleware(defaultErrorHandler)
 
 
 

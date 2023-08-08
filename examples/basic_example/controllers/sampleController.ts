@@ -1,4 +1,5 @@
-import { BaseController, Get, Req, Post, Res, Middleware } from "kamiq";
+import { BaseController } from "kamiq";
+import { Middleware, Post, Req, Res } from "kamiq/decorators";
 import { MySampleMiddleware } from "../middlewares/sampleMiddleware.middleware";
 import { MySampleMiddleware2 } from "../middlewares/sampleMiddleware2.middleware";
 

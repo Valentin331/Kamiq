@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { KamiqMiddleware } from "kamiq/interfaces/kamiqInterface.interface";
+import { KamiqMiddleware } from "kamiq/interfaces";
 
 const log = console.log
 

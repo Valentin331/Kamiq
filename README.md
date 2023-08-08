@@ -50,7 +50,8 @@ To configure your server, instantiate an object from the Server class. Use the p
 
 ```typescript
 import 'reflect-metadata' // Requires reflect-metadata due to usage of tsyringe for DI
-import * as kamiq from 'kamiq' // Import the framework
+import { Server } from 'kamiq'
+import { defaultErrorHandler } from 'kamiq/middlewares'
 
 // Import a sample controller:
 import { SampleController } from './controllers/sampleController'
@@ -69,7 +70,10 @@ server.start() // Start the server.
 ### 1.2. Controller and route example
 
 ```typescript
-import { BaseController, Get } from "kamiq"; // Import the BaseController and the Get decorator
+import { BaseController } from "kamiq";
+import { Middleware, Post, Req, Res } from "kamiq/decorators";
+import { MySampleMiddleware } from "../middlewares/sampleMiddleware.middleware";
+import { MySampleMiddleware2 } from "../middlewares/sampleMiddleware2.middleware";
 
 export class SampleController extends BaseController {
     path = '/ping' // Base path for the following routes.
@@ -94,7 +98,7 @@ export class SampleController extends BaseController {
 
 ### 2.1. Installing the framework and dependencies
 
-Firstly, install `reflect-metadata` shim (reqired due to usage of `tsyringe`):**
+Firstly, install `reflect-metadata` shim (reqired due to usage of `tsyringe`):
 
 ```
 npm install reflect-metadata
@@ -128,9 +132,9 @@ NOTE: This chapter serves as a brief introduction to the workings and principles
 In Kamiq, your application lives in the `server` object. To get started, import and instantiate an object from the Server class in your root file (usually `server.ts` or `app.ts`):
 
 ```typescript
-import * as kamiq from 'kamiq'
+import { Server } from 'kamiq'
 
-const server = kamiq.Server({
+const server = Server({
   // configuration properties  
 })
 ```
@@ -192,7 +196,7 @@ Server is listening on port 3002. // Default port.
 One property of the server config object we didn't cover is the `controllers` property. This is an array that takes in your controller classes that extend the `BaseController` class. Let's create a new file under `./controllers` and name it `SampleController.controller.ts` with the following contents:
 
 ```typescript
-import { BaseController, Get } from "kamiq";
+import { BaseController } from 'kamiq'
 
 export class SampleController extends BaseController {
     path = '/ping'
