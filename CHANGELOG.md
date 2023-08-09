@@ -1,5 +1,11 @@
 # kamiq
 
+## 0.1.3
+
+### Patch Changes
+
+- 402f235: initial deploy to npm
+
 ## 0.1.2
 
 ### Patch Changes
