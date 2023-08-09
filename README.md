@@ -7,13 +7,12 @@ Kamiq is a TypeScript framework for building declarative server-side application
 
 Kamiq is built on top of [Express.js](https://expressjs.com/) and by design offers high interoperability with Express.js, enabling the user to easily port over their existing Express.js code including routes, middlewares and more. It is a batteries-included framework, providing out-of-the-box error handling middlewares, custom prettified errors, response structures, file uploading and more.
 
-## Disclaimer!
-This project is a personal learning experiment and is not meant to be used for any production or production-like environment. It contains underdeveloped code and is missing a lot of features for it to be suitable for any real-world use. Further development will show where I want to take this project. Currently feel free to use, explore, and offer modifications to the codebase.
+<!-- ## Disclaimer!
+This project is a personal learning experiment and is not meant to be used for any production or production-like environment. It contains underdeveloped code and is missing a lot of features for it to be suitable for any real-world use. Further development will show where I want to take this project. Currently feel free to use, explore, and offer modifications to the codebase. -->
 
 ## Table of Contents
 - [Kamiq](#kamiq)
   - [Description](#description)
-  - [Disclaimer!](#disclaimer)
   - [Table of Contents](#table-of-contents)
   - [1. Example of usage](#1-example-of-usage)
     - [1.1. Configuring the server](#11-configuring-the-server)
@@ -32,14 +31,14 @@ This project is a personal learning experiment and is not meant to be used for a
       - [3.2.4. Query](#324-query)
       - [3.2.5. Body](#325-body)
     - [3.3. Error handling](#33-error-handling)
-    - [3.4. Middlewares](#34-middlewares)
-    - [3.5. Guards](#35-guards)
-    - [3.6. Operations](#36-operations)
-    - [3.6. Kamiq errors](#36-kamiq-errors)
-  - [4. Plans for the future](#4-plans-for-the-future)
-    - [4.1. High priority](#41-high-priority)
-    - [4.2. Low priority](#42-low-priority)
-    - [4.1. Backburner priority](#41-backburner-priority)
+    - [3.4. Request Logging](#34-request-logging)
+    - [3.5. Middlewares](#35-middlewares)
+    - [3.6. Guards](#36-guards)
+    - [3.7. Middleware/Guard options](#37-middlewareguard-options)
+      - [3.7.1. Ignore](#371-ignore)
+    - [3.8. Operations](#38-operations)
+    - [3.9. Kamiq errors](#39-kamiq-errors)
+  - [Examples](#examples)
 
 
 ## 1. Example of usage
@@ -49,22 +48,22 @@ This project is a personal learning experiment and is not meant to be used for a
 To configure your server, instantiate an object from the Server class. Use the public functions to set your configuration object and any other properties.
 
 ```typescript
-import 'reflect-metadata' // Requires reflect-metadata due to usage of tsyringe for DI
+import 'reflect-metadata'
 import { Server } from 'kamiq'
-import { defaultErrorHandler } from 'kamiq/middlewares'
+import { DefaultErrorHandler, DefaultRequestLogger } from 'kamiq/middlewares'
 
-// Import a sample controller:
 import { SampleController } from './controllers/sampleController'
 
-// Initialize the server and provide basic configuration (most basic way shown):
-const server = new kamiq.Server({
-    port: 3002,
-    controllers: [SampleController],
-    cors: true,
-    jsonBodyParser: true,
-})
+const server = new Server()
 
-server.start() // Start the server.
+server.setPort(8001)
+server.useJsonBodyParser(true)
+server.useController(SampleController)
+server.useCors(true)
+server.setGlobalRequestLogger(new DefaultRequestLogger())
+server.setGlobalErrorHandler(new DefaultErrorHandler(true))
+
+server.start()
 ```
 
 ### 1.2. Controller and route example
@@ -76,16 +75,18 @@ import { MySampleMiddleware } from "../middlewares/sampleMiddleware.middleware";
 import { MySampleMiddleware2 } from "../middlewares/sampleMiddleware2.middleware";
 
 export class SampleController extends BaseController {
-    path = '/ping' // Base path for the following routes.
+    path = '/users' // Base path for the following routes.
 
-    @Guard(new AgencyAuthorizer()) // Guards
+    @Guard(new AgencyAuthorizer(), {
+        ignore: true // Optional way to ignore a guard (or middleware)
+    }) // Guards
     @Middleware(new LogSignInEvent('user')) // Middlewares   
-    @Get('/test') // Get controller registeres the route with a GET method and handles errors
-    ping(@Req() req: Request, @Res() res: Response @Body() body: IUserSignIn @Param('userId') userId: string) {
+    @Post('/siginin') // Get controller registeres the route with a GET method and handles errors
+    ping(@Req() req: Request, @Res() res: Response, @Body() body: IUserSignIn, @Param('userId') userId: string) {
 
         const { password } = body
 
-        const signIn = AuthService.signin(userId, password) // Kamiq operation
+        const signIn = AuthService.signIn(userId, password) // Kamiq operation
 
         if (signIn.error) throw new AuthorizationError(signIn.error) // Picked up by global err handling middleware 
 
@@ -134,61 +135,30 @@ In Kamiq, your application lives in the `server` object. To get started, import 
 ```typescript
 import { Server } from 'kamiq'
 
-const server = Server({
-  // configuration properties  
-})
+const server = Server()
 ```
 
-The server class takes in a configuration object (will be covered in later chapters), containing the most important configuartion settings (note that these are just the most important properties listed here):
+Use public functions on the server object to configure your server. Let's take a look at the most commonly used:
 
 ```typescript
-    /*
-     * An array of controller classes that should be registered with the Express server. Each controller class should be a subclass of `BaseController`.
-     */
-    controllers: Array<new () => BaseController>
-  
-    /**
-     * The port number the server should listen on. If not provided, the default is 3001.
-     */
-    port?: number
-  
-    /**
-     * Whether to use the `express.json()` and `express.urlencoded()` middleware for parsing JSON and URL-encoded bodies. If not provided, the default is false.
-     */
-    jsonBodyParser?: boolean
-  
-    /**
-     * An optional configuration object for the CORS middleware. If provided, the server will use this
-     * configuration to set up CORS. The object can include properties such as `origin`, `methods`,
-     * `allowedHeaders`, etc. to control the CORS behavior. If not provided, the server will use
-     * default CORS settings.
-     */
-    cors?: boolean
-
+server.setPort(8001) // Sets the port server will listen on
+server.useJsonBodyParser(true) // Enables parsing incoming body as JSON
+server.useController(SampleController) // use useController() function to bind your controller classes
+server.useCors(true) // Use express cors() package
+server.setGlobalRequestLogger(new DefaultRequestLogger()) // Set your global request logger middleware
+server.setGlobalErrorHandler(new DefaultErrorHandler(true)) // Set your global error handling middleware
 ```
 
+Run `start()` to make the server listen for incoming requests.
 
-Let's take a look at a minimal server configuration object:
+Calling the following function will trigger all neccessary configuration for starting the server, including registering all middlewares and routes and more. Mistakes in the configuration of the server will result in Kamiq throwing a custom Error with suggestions for resolving them. A successfull configuration results in the following result:
 
-```typescript
-{
-    port: 3002,
-    controllers: [SampleController], // array of controller classes
-    cors: true,
-    jsonBodyParser: true,
-}
 ```
-
-The `Server` class contains many public functions, such as getters and setters for different properties. The one that we currently need is for starting the server:
-
-```typescript
-server.start()
-```
-
-Calling the following function will trigger all neccessary configuration for starting the server, including registering all  middlewares and routes and more. Mistakes in the configuration of the server will result in Kamiq throwing a custom Error with suggestions for resolving them. A successfull configuration results in the following result:
-
-```typescript
-Server is listening on port 3002. // Default port.
+  ┌ Kamiq ────────────────────────────────────────────┐
+  │                                                   │
+  │   Server is listening on  http://localhost:8001   │
+  │                                                   │
+  └───────────────────────────────────────────────────┘
 ```
 
 #### 3.1.2. Controllers
@@ -199,20 +169,20 @@ One property of the server config object we didn't cover is the `controllers` pr
 import { BaseController } from 'kamiq'
 
 export class SampleController extends BaseController {
-    path = '/ping'
+    path = '/users'
 
-    @Get('/test')
-    ping() {
-        this.ok('pong')
+    @Get('/all')
+    getAllUsers() {
+        this.ok('users...')
     } 
 }
 ```
 
 Kamiq focuses on heavy decorator use, resulting in highly declarative controller code. Each controller class extends the `BaseController` class that abstracts the route registering logic, along with hanlding middleware and errors (more on this later).
 
-The `path` property is the controller-level path that all routes in this contoller will be prefixed to. The following example route with the handler `ping()` results in the following path: `/ping/health`.
+The `path` property is the controller-level path that all routes in this contoller will be prefixed to. The following example route with the handler `getAllUsers()` results in the following path: `/users/all`.
 
-The `Get('/test')` decorator registeres the route with the `GET` method. It takes in one string argument which is the route-specific path suffix.
+The `Get('/getAllUsers')` decorator registeres the route with the `GET` method. It takes in one string argument which is the route-specific path suffix.
 
 ### 3.2. Parameters
 
@@ -287,7 +257,9 @@ The `@Body` decorator also takes in a string argument that extracts a specific p
 
 By default, all route handlers are async functions, so no need to declare the handler as async. In addition, all routes are wrapped in an `requestErrorHandler` middleware which wraps the handler in a try/catch block.
 
-By default, controller-level caught errors are handled with the `defaultErrorHandler` middleware and the `defaultErrorLogger` middleware. In combination, they log the error to the console and respond to the client with the following interface (properties are self-explanatory):
+This gives Kamiq a global error handling middleware you can leverage to handle errors in a single place. Kamiq provides a default `defaultErrorHandler` middleware you can use - or you can easily write your own.
+
+The default error handler responds with this interface:
 
 ```typescript
 export interface ErrorResponse {
@@ -301,7 +273,9 @@ export interface ErrorResponse {
   }
 ```
 
-A `BaseError` class extends the `NodeError`, making it trivial to write your own custom errors. Simply extend the `BaseError`, add your own logic and due to the fact all route handlers are wrapped in a try/catch block, simply throw your custom Error:
+Acceptable global error handles implement the `KamiqErrorMiddleware` interface.
+
+A `BaseError` class extends the Node `Error`, making it trivial to write your own custom errors. Simply extend the `BaseError`, add your own logic and due to the fact all route handlers are wrapped in a try/catch block, simply throw your custom Error:
 
 ```typescript
 @Get('/test')
@@ -315,7 +289,19 @@ A `BaseError` class extends the `NodeError`, making it trivial to write your own
 
 and Kamiq will handle everything for you.
 
-### 3.4. Middlewares
+### 3.4. Request Logging
+
+Use the `setGlobalRequestLogger()` function on the `Server()` class to set the request logger middleware.
+
+Use the default `DefaultRequestLogger` middleware which uses `winston` logger library, or write you own. Kamiq loggers implement the `KamiqMiddleware` interface.
+
+The default, while customizable, has the following default format:
+
+```typescript
+Wed, 09 Aug 2023 08:30:53 GMT info: POST /ping/test 200 3ms - 200 POST /ping/test - 3ms
+```
+
+### 3.5. Middlewares
 
 Custom middlewares can be run by simply using the `Middleware()` decorator on a route:
 
@@ -333,7 +319,7 @@ where `myCustomMiddleware` is a class that implements the `KamiqMiddleware` inte
 export class MySampleMiddleware implements KamiqMiddleware {
     async use(req: Request, res: Response, next: NextFunction): Promise<void> {
         // middleware code...
-        next()
+        return next()
     }
 }
 ```
@@ -345,15 +331,15 @@ Middlewares can also accept parameters that you can use in your `use()` function
 ```typescript
 // Middleware
 export class MySampleMiddleware implements KamiqMiddleware {
-    private readonly ignore: boolean;
+    private readonly someValue: boolean;
 
-    constructor(ignore: boolean) {
-        this.ignore = ignore;
+    constructor(someValue: boolean) {
+        this.someValue = someValue;
       }
 
     async use(req: Request, res: Response, next: NextFunction): Promise<void> {
         
-        if (this.ignore) next() 
+        // Can use someValue to change behavior...
 
         log('sample middleware hit!')
         // Modifying the request object:
@@ -361,11 +347,10 @@ export class MySampleMiddleware implements KamiqMiddleware {
         req.something = 'this is nice'
         next()
     }
-
 }
 
 // Route
-@Middleware(new MySampleMiddleware(false))
+    @Middleware(new MySampleMiddleware(false))
     @Middleware(new MySampleMiddleware2(false))
     @Post('/test')
     ping(@Req() req: Request, @Res() res: Response) {
@@ -390,12 +375,28 @@ Middlewares can be also chained, where the order of operations are respected:
     } 
 ```
 
-### 3.5. Guards
+### 3.6. Guards
 
-Guards are special middlewares, that must obey the single responsiblity rule. They're intended usecase is to handle authorization and authentication responsiblities. They have access to the `Request` object, and must return a `boolean | Promise<boolean>` type:
+Guards are special middlewares, that must obey the single responsiblity rule. They're intended usecase is to handle authorization and authentication responsiblities. They implement the `KamiqGuard` interface, which takes in the `use()` function which is the request handler that must return a boolean, and a `setError()` function which you can optionally use to set the error type that will be caught in case the guard returns a `false` value. 
+
+Here's how a guard might look:
 
 ```typescript
-@Guard(myGuard)
+export class sampleGuard implements KamiqGuard {
+    use(req: Request, res: Response, next: NextFunction): boolean {
+        // your code...
+    }
+
+    setError(): Error {
+        return new Error('guard stopped execution.')
+    }
+}  
+```
+
+Then we can use it like so:
+
+```typescript
+@Guard(new sampleGuard())
 @Get('/test')
     ping() {
         // ...
@@ -404,19 +405,25 @@ Guards are special middlewares, that must obey the single responsiblity rule. Th
 
 Regardless of middleware order, Guard logic always takeds precedence, therefore is always executed before other middleware functions.
 
-Guards also support configuration options. Currently, there is only one option:
+### 3.7. Middleware/Guard options
+
+`Middleware()` and `Guard()` decorators take an optional second argument, an object you can use to modify the handlers behaviour. Here are the avaiable options:
+
+#### 3.7.1. Ignore
+
+Use the `ignore` boolean, which enables you to quickly enable/disable the middleware while developing your application, making it easier to debug/test your routes.
 
 ```typescript
-@Guard(myGuard, { ignore: true })
-@Get('/test')
-    ping() {
+ @Guard(new AgencyAuthorizer(), {
+        ignore: true // Optional way to ignore a guard (or middleware)
+    }) // Guards
+    @Post('/siginin') 
+    ping(@Req() req: Request, @Res() res: Response) {
         // ...
     } 
 ```
 
-which allows you to ignore the guard and immediately skip to the next function in the request lifecycle.
-
-### 3.6. Operations
+### 3.8. Operations
 
 Operations are a Kamiq-specific function type that aide with inter-layer communication within your codebase. Let's consider a simple backend architecture, consisting of three layers: presentation, service and data-access layer.
 
@@ -462,7 +469,7 @@ function mockControllerFunction() {
 
 Tip: Combine service level functions as Operations with the controller-level error handling to create bulletproof controller-service logic.
 
-### 3.6. Kamiq errors
+### 3.9. Kamiq errors
 
 Kamiq offers descriptive, prettified framework-level error handling to make it as responsive and informative as possible. If you make any configuration or definition errors at the framework level, Kamiq will throw it's custom error to help you resolve the problem. Here's an example of such error being thrown, invoked due to a misconfigured `port` variable:
 
@@ -470,26 +477,6 @@ Kamiq offers descriptive, prettified framework-level error handling to make it a
 
 Kamiq also handles `unhandledRejection` and `uncaughtException` errors in a similar fasion. All errors are followed with the stack trace of where it was invoked.
 
-## 4. Plans for the future
+## Examples
 
-I have just began working on this project, so here are some short rough todos I plan to tackle in the future:
-
-### 4.1. High priority
-1. Publish to NPM
-2. Write a full documentation
-3. Refactor the Server class
-4. Add release notes
-5. All support for providing custom error and error logger middlewares
-6. All file upload and processing support
-7. Add support for server-wide loggers
-8. Add custom errors and handle more errors
-
-### 4.2. Low priority
-1. Add support for registering vanilla express routes
-2. Add support for registering server-wide middlewares
-3. Refactor Middleware decorator (interface, support for Before/After route handler execution)
-4. Refactor Guards (decorator logic, interface)
-5. Exception Filters
-### 4.1. Backburner priority
-1. Write more examples
-2. Re-do all JSDoc descriptions
+Take a peek into the `examples` folder, which houses example of using the Kamiq framework. Simply install the dependencies, check the `package.json` for scripts and examine the code.
