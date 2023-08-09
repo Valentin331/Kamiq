@@ -4,15 +4,15 @@ import { KamiqMiddleware } from "kamiq/interfaces";
 const log = console.log
 
 export class MySampleMiddleware implements KamiqMiddleware {
-    private readonly ignore: boolean;
+    private readonly someValue: boolean;
 
-    constructor(ignore: boolean) {
-        this.ignore = ignore;
+    constructor(someValue: boolean) {
+        this.someValue = someValue;
       }
 
     async use(req: Request, res: Response, next: NextFunction): Promise<void> {
         
-        if (this.ignore) next() 
+        // Can use someValue to change behavior...
 
         log('sample middleware hit!')
         // Modifying the request object:

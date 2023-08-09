@@ -37,4 +37,9 @@ export interface ServerConfig {
    * Sets the middleware that will process all controller-level caught errors.
    */
   errorMiddleware?: any // TODO: implement type
+
+  /**
+   * Sets the middleware that will process all controller-level caught errors.
+   */
+  loggerMiddleware?: any // TODO: implement type
 }

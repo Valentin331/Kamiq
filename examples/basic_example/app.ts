@@ -1,8 +1,8 @@
 import 'reflect-metadata'
 import { Server } from 'kamiq'
-import { defaultErrorHandler } from 'kamiq/middlewares'
 
 import { SampleController } from './controllers/sampleController'
+import { DefaultErrorHandler, DefaultRequestLogger } from 'kamiq/middlewares'
 
 // Setting the server with the initial config object
 const serverWithInitalConfig = new Server({
@@ -20,7 +20,9 @@ server.setPort(8001)
 server.useJsonBodyParser(true)
 server.useController(SampleController)
 server.useCors(true)
-server.setErrorHandlerMiddleware(defaultErrorHandler)
+// @ts-ignore
+server.setGlobalRequestLogger(new DefaultRequestLogger())
+server.setGlobalErrorHandler(new DefaultErrorHandler(true))
 
 
 

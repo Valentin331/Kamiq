@@ -2,38 +2,35 @@ import { Metadata } from '../enums'
 import { IMetadataService } from '../interfaces'
 import { container } from 'tsyringe'
 import { getService } from '../utils/getService.function'
-import { KamiqMiddleware } from '../interfaces/kamiqInterface.interface'
+import { KamiqMiddleware } from '../interfaces/kamiqMiddleware.interface'
 import { NextFunction, Request, Response } from 'express'
 
 /**
- * Middleware decorator factory. This decorator adds the provided middleware
- * function to a route handler method.
+ * Decorator function that associates a middleware with a class method.
  *
- * @param {Function} middleware - The middleware function to be added to the route.
- * The function should take three arguments: `(req, res, next)`.
- *
- * @returns {Function} - A decorator function that can be used to decorate a
- * route handler method. When the decorated route is hit, the provided
- * middleware function will be invoked before the route handler.
- *
+ * @param {KamiqMiddleware} middleware - Middleware instance that implements the `KamiqMiddleware` interface.
+ * @param {any} [options] - Optional configuration for the middleware. TODO: Define a type for the options.
+ * @returns {Function} A function decorator that processes the given middleware before the method.
+ * 
  * @example
- *
- * ```javascript
- * @Middleware(someMiddleware)
- * @Post('/some-route')
- * handleSomeRoute(@Param('id') id: string) {
- *   // handle route
+ * ```typescript
+ * @Middleware(new MyCustomMiddleware(), { ignore: true })
+ * someMethod() {
+ *   // ...
  * }
  * ```
  */
-export function Middleware(middleware: KamiqMiddleware) {
+export function Middleware(middleware: KamiqMiddleware, options?: any) { // TODO: ADD options type
   return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
     const metadataService = getService<IMetadataService>('MetadataService')
 
     const exisitngMiddlewares: Array<any> = metadataService.get(Metadata.MIDDLEWARES, target.constructor.uuid) ?? [] // TODO: Do i need this empty array here as a backup?
     exisitngMiddlewares.unshift({
       handler: target[propertyKey],
-      middleware: (req: Request, res: Response, next: NextFunction) => middleware.use(req, res, next),
+      middleware: (req: Request, res: Response, next: NextFunction) => {
+        if (options && options.ignore) return next()
+        middleware.use(req, res, next)
+      },
     })
     metadataService.set(Metadata.MIDDLEWARES, target.constructor.uuid, exisitngMiddlewares)
   }

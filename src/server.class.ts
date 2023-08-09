@@ -1,18 +1,16 @@
 import { IMetadataService } from './interfaces/IMetadataService.interface'
-import { GuardMetadata } from './interfaces/guardMetadata.interface'
-import { ParamMetadata } from './interfaces/paramMetadata.interface'
-import { RouteMetadata } from './interfaces/routeMetadata.interface'
 import { ServerConfig } from './interfaces/serverConfig.interface'
 import cors from 'cors'
 import express, { Express } from 'express'
 import { MetadataService } from './metadata.service'
-import { defaultErrorHandler } from './middlewares'
 import { container } from 'tsyringe'
 import { KamiqError, getService } from './utils'
 import * as KamiqErrors from './utils/errors/framework/kamiqErrors'
 import { BaseController } from './baseController'
 import chalk from 'chalk'
 import boxen from 'boxen'
+import { KamiqMiddleware } from './interfaces'
+import { KamiqErrorMiddleware } from './interfaces/kamiqErrorMiddleware.interface'
 
 // Register the metadata service at the top level of the module.
 container.register('MetadataService', { useClass: MetadataService })
@@ -39,7 +37,7 @@ export class Server {
    * - guards
    * Contains getters and setters along with helper functions to help manage data.
    */
-  private metadataService: IMetadataService
+  private metadataService: IMetadataService // TODO: Do I need this here?
 
   public constructor(config?: ServerConfig) {
     this.metadataService = getService<IMetadataService>('MetadataService')
@@ -63,6 +61,9 @@ export class Server {
         this.server.use(express.json())
         this.server.use(express.urlencoded({ extended: true }))
       }
+
+      // BUG_HERE!: Global error and logger middlewares cannot be (and are not as of now) registered with initial config constructor.
+
     } else {
       this.config = {
         controllers: [],
@@ -152,10 +153,13 @@ export class Server {
    * Sets the error handler middleware that will process all controller-level caught errors.
    * @param middleware
    */
-  setErrorHandlerMiddleware(middleware: any): void {
-    // TODO: implement type
+  setGlobalErrorHandler(middleware: KamiqErrorMiddleware): void { 
     this.config.errorMiddleware = middleware
   }
+
+  setGlobalRequestLogger(middleware: KamiqMiddleware): void {
+    this.config.loggerMiddleware = middleware
+  } 
 
   private getServerStartMessage() {
     const boxenOptions = {
@@ -181,11 +185,17 @@ export class Server {
     this.server.set('port', this.config.port)
     if (this.config.cors) this.server.use(cors())
     if (this.config.jsonBodyParser) {
-      console.log('calldwad')
       this.server.use(express.json())
       this.server.use(express.urlencoded({ extended: true }))
     }
+    if (this.config.loggerMiddleware) {
+      this.server.use(this.config.loggerMiddleware.use.bind(this.config.loggerMiddleware))
+    } 
     this.registerControllers() // Should this be here?
+
+    if (this.config.errorMiddleware) {
+      this.server.use(this.config.errorMiddleware.use.bind(this.config.errorMiddleware)) 
+    }
 
     // start the server
     this.server.listen(this.config.port, () => {

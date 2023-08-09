@@ -3,7 +3,7 @@ import crypto from 'crypto'
 import { IMetadataService } from './interfaces/IMetadataService.interface'
 import { container } from 'tsyringe'
 import { Metadata } from './enums/metadata.enum'
-import { asyncRequestHandler } from './middlewares/requestErrorHandler.middleware'
+import { asyncRequestHandler } from './middlewares/asyncRequestHandler'
 import { getService } from './utils'
 
 export abstract class BaseController {
