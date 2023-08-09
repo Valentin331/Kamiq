@@ -1,5 +1,11 @@
 # kamiq
 
+## 0.1.2
+
+### Patch Changes
+
+- 6cd0501: initial deploy
+
 ## 0.1.1
 
 ### Patch Changes
