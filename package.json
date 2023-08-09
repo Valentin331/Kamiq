@@ -1,6 +1,6 @@
 {
   "name": "kamiq",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "A lightweight node web framework for building delcarative web servers with high Express.js interoperability",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
