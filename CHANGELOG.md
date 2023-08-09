@@ -1,22 +1,10 @@
 # kamiq
 
-## 0.1.4
-
-### Patch Changes
-
-- 05ffc83: hello, npm
-
-## 0.1.3
-
-### Patch Changes
-
-- 402f235: initial deploy to npm
-
 ## 0.1.2
 
 ### Patch Changes
 
-- 6cd0501: initial deploy
+- 6cd0501: initial deploy to npm
 
 ## 0.1.1
 
