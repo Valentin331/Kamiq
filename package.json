@@ -10,7 +10,8 @@
     "package": "npm pack && node tgzprocessing.js",
     "clean": "rm -rf dist",
     "produce": "npm run clean && npm i && npm run build && npm run package",
-    "lint": "tsc"
+    "lint": "tsc",
+    "release": "pnpm run build && changeset publish"
   },
   "author": "",
   "license": "ISC",
