@@ -1,5 +1,0 @@
----
-'kamiq': patch
----
-
-hello, npm
